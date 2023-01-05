@@ -4,6 +4,7 @@
 #![feature(fs_try_exists, if_let_guard)]
 
 use mylibrary::sh;
+use mylibrary::sh::cd;
 use mylibrary::sh_cmd;
 use std::env;
 use std::fs;
@@ -39,6 +40,7 @@ fn main() {
 	match fs::try_exists(format!("{xdg_config_home}/.git/"),) {
 		Ok(true,) => {
 			//  no need to clone. pull it.
+			cd(xdg_config_home.clone(),).expect("can't `cd` to XDG_CONFIG_HOME",);
 			sh_cmd!("git", ["pull"]);
 		},
 		_ => {
