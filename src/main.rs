@@ -34,7 +34,9 @@ fn home_path() -> String {
 	}
 }
 
-fn linkable(s: &str,) -> bool { s.contains(".config/.",) && !s.contains(".git",) || s.contains(".gitconfig",) }
+fn linkable(s: &str,) -> bool {
+	s.contains(".config/.",) && !s.contains("git",) && !s.contains("DS_Store",) || s.contains(".gitconfig",)
+}
 
 /// TODO: require setting file to specify url of dotfile
 fn main() {
