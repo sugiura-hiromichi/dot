@@ -67,13 +67,19 @@ fn main() {
    };
 
 	for entry in files {
-		let entry = entry.expect("Fail to get entry",).path();
-		let path = entry.to_str().expect("Failed to get file_name",);
-		println!("path: {path}");
+		let entry = entry.expect("Fail to get entry",);
+		let path = entry.path();
+		if path.is_dir() {
+			let path = path.to_str().expect("Failed to get file_name",);
+			if path.contains("/.fig",) {
+				sh_cmd!("ln", ["-fsn", &format!("{path}/")]);
+			}
+		} else {
+			let path = path.to_str().expect("Failed to get file_name",);
 
-		if &path[0..1] == "." && !path.contains(".gitignore",) && !path.contains(".git/",) {
-			//std::os::unix::fs::symlink(file_name, "~/",).expect("symlink error",);
-			sh_cmd!("ln", ["-fsn", path]);
+			if &path[0..1] == "." && !path.contains(".gitignore",) {
+				sh_cmd!("ln", ["-fsn", path]);
+			}
 		}
 	}
 
