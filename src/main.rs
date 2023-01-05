@@ -60,7 +60,7 @@ fn main() {
 	}
 
 	// symlinking
-	// ensured that current directory is `~/`
+	cd(home_path(),).expect("Failed to move home directory",);
 	let Ok(files,) = fs::read_dir(xdg_config_home,) else{
       eprintln!("error happen while reading XDG_CONFIG_HOME");
       return;
