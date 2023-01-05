@@ -11,7 +11,9 @@ use std::fs;
 use std::io;
 
 const REPOSITORY: &str = "sugirua-hiromichi/.config";
+const RELATIVE_CONF_PATH: &str = ".config";
 
+/// TODO: receive boolean argument `relative` & `curdir`. if `relative==true` return relative path from `curdir`
 fn conf_path() -> String {
 	match env::var("XDG_CONFIG_HOME",) {
 		Ok(val,) => {
@@ -31,6 +33,8 @@ fn home_path() -> String {
 		Err(_,) => "/User/r".to_string(),
 	}
 }
+
+fn linkable(s: &str,) -> bool { s.contains(".config/.",) && !s.contains(".git",) || s.contains(".gitconfig",) }
 
 /// TODO: require setting file to specify url of dotfile
 fn main() {
@@ -61,25 +65,16 @@ fn main() {
 
 	// symlinking
 	cd(home_path(),).expect("Failed to move home directory",);
-	let Ok(files,) = fs::read_dir(xdg_config_home,) else{
+	let Ok(files,) = fs::read_dir(RELATIVE_CONF_PATH) else{
       eprintln!("error happen while reading XDG_CONFIG_HOME");
       return;
    };
 
 	for entry in files {
-		let entry = entry.expect("Fail to get entry",);
-		let path = entry.path();
-		if path.is_dir() {
-			let path = path.to_str().expect("Failed to get file_name",);
-			if path.contains("/.fig",) {
-				sh_cmd!("ln", ["-fsn", &format!("{path}/")]);
-			}
-		} else {
-			let path = path.to_str().expect("Failed to get file_name",);
-
-			if &path[0..1] == "." && !path.contains(".gitignore",) {
-				sh_cmd!("ln", ["-fsn", path]);
-			}
+		let entry = entry.expect("Fail to get entry",).path();
+		let path = entry.to_str().expect("Failed to get file_name",);
+		if linkable(path,) {
+			sh_cmd!("ln", ["-fsn", path]);
 		}
 	}
 
