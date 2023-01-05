@@ -57,7 +57,8 @@ fn main() {
 		},
 	}
 
-	// symlinkink
+	// symlinking
+	// ensured that current directory is `~/`
 	let Ok(files,) = fs::read_dir(xdg_config_home,) else{
       eprintln!("error happen while reading XDG_CONFIG_HOME");
       return;
@@ -67,9 +68,10 @@ fn main() {
 		let entry = entry.expect("Fail to get entry",);
 		let path = entry.path();
 		if !path.is_dir() {
-			let file_name = path.to_str().expect("Failed to get file_name",);
-			if &file_name[0..1] == "." || file_name != ".gitignore" {
-				std::os::unix::fs::symlink(file_name, "~/",).expect("symlink error",);
+			let path = path.to_str().expect("Failed to get file_name",);
+			if &path[0..1] == "." || path != ".gitignore" {
+				//std::os::unix::fs::symlink(file_name, "~/",).expect("symlink error",);
+				sh_cmd!("ln", ["-fsn", path]);
 			}
 		}
 	}
