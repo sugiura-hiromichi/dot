@@ -75,4 +75,6 @@ fn main() {
 			}
 		}
 	}
+
+	println!("\t------------|dotfiles updated|------------");
 }
