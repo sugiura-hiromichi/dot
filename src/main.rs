@@ -7,6 +7,7 @@ use mylibrary::sh;
 use mylibrary::sh_cmd;
 use std::env;
 use std::fs;
+use std::io;
 
 const REPOSITORY: &str = "sugirua-hiromichi/.config";
 
@@ -19,7 +20,14 @@ fn conf_path() -> String {
 				val
 			}
 		},
-		Err(_,) => "~/.config".to_string(),
+		Err(_,) => home_path() + "/.config",
+	}
+}
+
+fn home_path() -> String {
+	match env::var("HOME",) {
+		Ok(val,) => val,
+		Err(_,) => "/User/r".to_string(),
 	}
 }
 
@@ -34,7 +42,7 @@ fn main() {
 			sh_cmd!("git", ["pull"]);
 		},
 		_ => {
-			match sh::cd("~",) {
+			match sh::cd(home_path(),) {
 				Ok(_,) => {
 					//  need to clone
 					println!("Clone your dotfiles directory.");
