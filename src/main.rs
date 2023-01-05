@@ -71,7 +71,7 @@ fn main() {
 		let path = entry.path();
 		if !path.is_dir() {
 			let path = path.to_str().expect("Failed to get file_name",);
-			if &path[0..1] == "." || path != ".gitignore" {
+			if &path[0..1] == "." && path != ".gitignore" {
 				//std::os::unix::fs::symlink(file_name, "~/",).expect("symlink error",);
 				sh_cmd!("ln", ["-fsn", path]);
 			}
