@@ -69,6 +69,7 @@ fn main() {
 	for entry in files {
 		let entry = entry.expect("Fail to get entry",).path();
 		let path = entry.to_str().expect("Failed to get file_name",);
+		println!("path: {path}");
 
 		if &path[0..1] == "." && !path.contains(".gitignore",) && !path.contains(".git/",) {
 			//std::os::unix::fs::symlink(file_name, "~/",).expect("symlink error",);
