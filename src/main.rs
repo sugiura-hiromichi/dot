@@ -10,7 +10,7 @@ use std::env;
 use std::fs;
 use std::io;
 
-const REPOSITORY: &str = "sugirua-hiromichi/.config";
+const REPOSITORY: &str = "sugiura-hiromichi/.config";
 const RELATIVE_CONF_PATH: &str = ".config";
 
 /// TODO: receive boolean argument `relative` & `curdir`. if `relative==true` return relative path from `curdir`
