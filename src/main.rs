@@ -47,6 +47,10 @@ fn main() {
 	// detect dotfiles location
 	let xdg_config_home = conf_path();
 
+	if let Some(_,) = args.find(|a| a == "init",) {
+		sh_cmd!("rm", ["-rf", &conf_path()]);
+	}
+
 	match fs::try_exists(format!("{xdg_config_home}/.git/"),) {
 		Ok(true,) => {
 			//  no need to clone. pull it.
