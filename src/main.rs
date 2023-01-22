@@ -48,6 +48,7 @@ fn main() {
 	let xdg_config_home = conf_path();
 
 	if let Some(_,) = args.find(|a| a == "init",) {
+		println!("-----------init");
 		sh_cmd!("rm", ["-rf", &conf_path()]);
 	}
 
@@ -62,10 +63,7 @@ fn main() {
 				Ok(_,) => {
 					//  need to clone
 					println!("Clone your dotfiles directory.");
-					sh_cmd!(
-						"git",
-						["clone".to_string(), format!("https://github.com/{REPOSITORY}")]
-					);
+					sh_cmd!("git", ["clone".to_string(), format!("git@github.com:{REPOSITORY}")]);
 				},
 				Err(e,) => {
 					// exit
