@@ -3,6 +3,7 @@
 #![allow(unused)]
 #![feature(fs_try_exists, if_let_guard)]
 
+use mylibrary::cli;
 use mylibrary::sh;
 use mylibrary::sh::cd;
 use mylibrary::sh_cmd;
@@ -13,7 +14,8 @@ use std::io;
 const REPOSITORY: &str = "sugiura-hiromichi/.config";
 const RELATIVE_CONF_PATH: &str = ".config";
 
-/// TODO: receive boolean argument `relative` & `curdir`. if `relative==true` return relative path from `curdir`
+/// TODO: receive boolean argument `relative` & `curdir`. if `relative==true` return relative path
+/// from `curdir`
 fn conf_path() -> String {
 	match env::var("XDG_CONFIG_HOME",) {
 		Ok(val,) => {
@@ -35,11 +37,13 @@ fn home_path() -> String {
 }
 
 fn linkable(s: &str,) -> bool {
-	s.contains(".config/.",) && !s.contains("git",) && !s.contains("DS_Store",) || s.contains(".gitconfig",)
+	s.contains(".config/.",) && !s.contains("git",) && !s.contains("DS_Store",)
+		|| s.contains(".gitconfig",)
 }
 
 /// TODO: require setting file to specify url of dotfile
 fn main() {
+	let mut args = env::args();
 	// detect dotfiles location
 	let xdg_config_home = conf_path();
 
@@ -54,7 +58,10 @@ fn main() {
 				Ok(_,) => {
 					//  need to clone
 					println!("Clone your dotfiles directory.");
-					sh_cmd!("git", ["clone".to_string(), format!("https://github.com/{REPOSITORY}")]);
+					sh_cmd!(
+						"git",
+						["clone".to_string(), format!("https://github.com/{REPOSITORY}")]
+					);
 				},
 				Err(e,) => {
 					// exit
@@ -63,6 +70,30 @@ fn main() {
 				},
 			}
 		},
+	}
+
+	// initialize if required
+	if let Some(_,) = args.find(|a| a == "init",) {
+		cd(home_path(),).expect("failed to move home directory",);
+		sh_cmd!(
+			"cargo",
+			"install --git https://github.com/sugiura-hiromichi/tp ".split_whitespace()
+		);
+		sh_cmd!(
+			"cargo",
+			"install --git https://github.com/sugiura-hiromichi/cn".split_whitespace()
+		);
+		sh_cmd!(
+			"cargo",
+			"install --git https://github.com/sugiura-hiromichi/gc".split_whitespace()
+		);
+		sh_cmd!("rm", "-rf .config/ .zshrc .zshenv .zshrc".split_whitespace());
+		sh_cmd!(
+			"/bin/bash",
+			["-c","\"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""]
+		);
+		cd(conf_path(),).expect("failed to move config home",);
+		sh_cmd!("brew", ["bundle"]);
 	}
 
 	// symlinking
