@@ -43,14 +43,9 @@ fn linkable(s: &str,) -> bool {
 
 /// TODO: require setting file to specify url of dotfile
 fn main() {
-	let mut args = env::args();
+	// TODO:	let mut args = env::args();
 	// detect dotfiles location
 	let xdg_config_home = conf_path();
-
-	if let Some(_,) = args.find(|a| a == "init",) {
-		println!("-----------init");
-		sh_cmd!("rm", ["-rf", &conf_path()]);
-	}
 
 	match fs::try_exists(format!("{xdg_config_home}/.git/"),) {
 		Ok(true,) => {
@@ -72,30 +67,6 @@ fn main() {
 				},
 			}
 		},
-	}
-
-	// initialize if required
-	if let Some(_,) = args.find(|a| a == "init",) {
-		cd(home_path(),).expect("failed to move home directory",);
-		sh_cmd!(
-			"cargo",
-			"install --git https://github.com/sugiura-hiromichi/tp ".split_whitespace()
-		);
-		sh_cmd!(
-			"cargo",
-			"install --git https://github.com/sugiura-hiromichi/cn".split_whitespace()
-		);
-		sh_cmd!(
-			"cargo",
-			"install --git https://github.com/sugiura-hiromichi/gc".split_whitespace()
-		);
-		sh_cmd!("rm", "-rf .config/ .zshrc .zshenv .zshrc".split_whitespace());
-		sh_cmd!(
-			"/bin/bash",
-			["-c","\"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""]
-		);
-		cd(conf_path(),).expect("failed to move config home",);
-		sh_cmd!("brew", ["bundle"]);
 	}
 
 	// symlinking
