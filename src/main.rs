@@ -84,5 +84,8 @@ fn main() {
 		}
 	}
 
+	cd(home_path() + "/.local",).expect("Failed to move ~/.local",);
+	sh_cmd!("ln", ["-fsn".to_string(), conf_path() + "/bin"]);
+
 	println!("\t------------|dotfiles updated|------------");
 }
