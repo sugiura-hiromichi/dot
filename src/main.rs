@@ -5,7 +5,6 @@
 
 use mylibrary::cli;
 use mylibrary::sh;
-use mylibrary::sh::cd;
 use mylibrary::sh_cmd;
 use std::env;
 use std::fs;
@@ -32,7 +31,7 @@ fn conf_path() -> String {
 fn home_path() -> String {
 	match env::var("HOME",) {
 		Ok(val,) => val,
-		Err(_,) => "/User/r".to_string(),
+		Err(_,) => panic!("|>set $HOME variable"),
 	}
 }
 
@@ -41,7 +40,6 @@ fn linkable(s: &str,) -> bool {
 		|| s.contains(".gitconfig",)
 }
 
-/// TODO: require setting file to specify url of dotfile
 fn main() {
 	// TODO:	let mut args = env::args();
 	// detect dotfiles location
@@ -50,11 +48,11 @@ fn main() {
 	match fs::try_exists(format!("{xdg_config_home}/.git/"),) {
 		Ok(true,) => {
 			//  no need to clone. pull it.
-			cd(xdg_config_home.clone(),).expect("can't `cd` to XDG_CONFIG_HOME",);
+			sh_cmd!("cd", [xdg_config_home]).expect("can't `cd` to XDG_CONFIG_HOME",);
 			sh_cmd!("git", ["pull"]);
 		},
 		_ => {
-			match sh::cd(home_path(),) {
+			match sh_cmd!("cd", [home_path()]) {
 				Ok(_,) => {
 					//  need to clone
 					println!("Clone your dotfiles directory.");
@@ -70,7 +68,7 @@ fn main() {
 	}
 
 	// symlinking
-	cd(home_path(),).expect("Failed to move home directory",);
+	sh_cmd!("cd", [home_path()]).expect("Failed to move home directory",);
 	let Ok(files,) = fs::read_dir(RELATIVE_CONF_PATH) else{
       eprintln!("error happen while reading XDG_CONFIG_HOME");
       return;
@@ -84,8 +82,8 @@ fn main() {
 		}
 	}
 
-	cd(home_path() + "/.local",).expect("Failed to move ~/.local",);
+	sh_cmd!("cd", [home_path() + "/.local"]).expect("Failed to move ~/.local",);
 	sh_cmd!("ln", ["-fsn".to_string(), conf_path() + "/bin"]);
 
-	println!("\t------------|dotfiles updated|------------");
+	println!("\t<|dotfiles updated|>");
 }
