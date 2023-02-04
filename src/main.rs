@@ -11,10 +11,7 @@ use std::fs;
 use std::io;
 
 const REPOSITORY: &str = "sugiura-hiromichi/.config";
-const RELATIVE_CONF_PATH: &str = ".config";
 
-/// TODO: receive boolean argument `relative` & `curdir`. if `relative==true` return relative path
-/// from `curdir`
 fn conf_path() -> String {
 	match env::var("XDG_CONFIG_HOME",) {
 		Ok(val,) => {
@@ -41,15 +38,13 @@ fn linkable(s: &str,) -> bool {
 }
 
 fn main() -> io::Result<(),> {
-	// TODO:	let mut args = env::args();
-	// detect dotfiles location
 	let xdg_config_home = conf_path();
 
 	println!("syncing...");
 	match fs::try_exists(format!("{xdg_config_home}/.git/"),) {
 		Ok(true,) => {
 			//  no need to clone. pull it.
-			sh_cmd!("cd", [xdg_config_home]);
+			sh_cmd!("cd", [xdg_config_home.clone()]);
 			sh_cmd!("git", ["pull"])?;
 		},
 		_ => {
@@ -60,8 +55,8 @@ fn main() -> io::Result<(),> {
 
 	// symlinking
 	println!("symlinking...");
-	sh_cmd!("cd", [home_path()])?;
-	let files = fs::read_dir(RELATIVE_CONF_PATH,)?;
+	sh_cmd!("cd", [home_path()]);
+	let files = fs::read_dir(xdg_config_home,)?;
 	for entry in files {
 		let entry = entry.expect("Fail to get entry",).path();
 		let path = entry.to_str().expect("Failed to get file_name",);
