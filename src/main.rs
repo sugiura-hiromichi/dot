@@ -9,26 +9,38 @@ use mylibrary::sh_cmd;
 use std::env;
 use std::fs;
 use std::io;
+use PathIdentifier::*;
 
 const REPOSITORY: &str = "sugiura-hiromichi/.config";
 
-fn conf_path() -> String {
-	match env::var("XDG_CONFIG_HOME",) {
-		Ok(val,) => {
-			if &val[val.len() - 1..val.len()] == "/" {
-				val[..val.len() - 2].to_string()
-			} else {
-				val
-			}
-		},
-		Err(_,) => home_path() + "/.config",
-	}
+enum PathIdentifier {
+	Conf,
+	Home,
+	Cargo,
 }
-
-fn home_path() -> String {
-	match env::var("HOME",) {
-		Ok(val,) => val,
-		Err(_,) => panic!("|>set $HOME variable"),
+impl PathIdentifier {
+	fn raw(&self,) -> String {
+		use PathIdentifier::*;
+		match self {
+			Conf => match env::var("XDG_CONFIG_HOME",) {
+				Ok(val,) => {
+					if &val[val.len() - 1..val.len()] == "/" {
+						val[..val.len() - 2].to_string()
+					} else {
+						val
+					}
+				},
+				Err(_,) => Home.raw() + "/.config",
+			},
+			Home => match env::var("HOME",) {
+				Ok(val,) => val,
+				Err(e,) => panic!("|>set $HOME variable\n|> error message | {e}"),
+			},
+			Cargo => match env::var("CARGO_HOME,",) {
+				Ok(val,) => val,
+				Err(_,) => Home.raw() + "/.cargo",
+			},
+		}
 	}
 }
 
@@ -38,25 +50,23 @@ fn linkable(s: &str,) -> bool {
 }
 
 fn main() -> io::Result<(),> {
-	let xdg_config_home = conf_path();
-
 	println!("syncing...");
-	match fs::try_exists(format!("{xdg_config_home}/.git/"),) {
+	match fs::try_exists(format!("{}/.git/", Conf.raw()),) {
 		Ok(true,) => {
 			//  no need to clone. pull it.
-			sh_cmd!("cd", [xdg_config_home.clone()]);
+			sh_cmd!("cd", [Conf.raw()]);
 			sh_cmd!("git", ["pull"])?;
 		},
 		_ => {
-			sh_cmd!("cd", [home_path()]);
+			sh_cmd!("cd", [Home.raw()]);
 			sh_cmd!("git", ["clone".to_string(), format!("git@github.com:{REPOSITORY}")])?;
 		},
 	}
 
 	// symlinking
 	println!("symlinking...");
-	sh_cmd!("cd", [home_path()]);
-	let files = fs::read_dir(xdg_config_home,)?;
+	sh_cmd!("cd", [Home.raw()]);
+	let files = fs::read_dir(Conf.raw(),)?;
 	for entry in files {
 		let entry = entry.expect("Fail to get entry",).path();
 		let path = entry.to_str().expect("Failed to get file_name",);
@@ -65,8 +75,11 @@ fn main() -> io::Result<(),> {
 		}
 	}
 
-	sh_cmd!("cd", [home_path() + "/.local"]);
-	sh_cmd!("ln", ["-fsn".to_string(), conf_path() + "/bin"])?;
+	sh_cmd!("cd", [Home.raw() + "/.local"]);
+	sh_cmd!("ln", ["-fsn".to_string(), Conf.raw() + "/bin"])?;
+
+	sh_cmd!("cd", [Cargo.raw()]);
+	sh_cmd!("ln", ["-fsn".to_string(), Conf.raw() + "config.toml"])?;
 
 	println!("dotfiles updated|>");
 	Ok((),)
