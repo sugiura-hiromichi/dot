@@ -79,7 +79,7 @@ fn main() -> io::Result<(),> {
 	sh_cmd!("ln", ["-fsn".to_string(), Conf.raw() + "/bin"])?;
 
 	sh_cmd!("cd", [Cargo.raw()]);
-	sh_cmd!("ln", ["-fsn".to_string(), Conf.raw() + "config.toml"])?;
+	sh_cmd!("ln", ["-fsn".to_string(), Conf.raw() + "/config.toml"])?;
 
 	println!("dotfiles updated|>");
 	Ok((),)
