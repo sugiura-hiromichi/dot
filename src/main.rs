@@ -18,6 +18,7 @@ enum PathIdentifier {
 	Home,
 	Cargo,
 }
+
 impl PathIdentifier {
 	fn raw(&self,) -> String {
 		use PathIdentifier::*;
@@ -49,7 +50,7 @@ fn linkable(s: &str,) -> bool {
 		|| s.contains(".gitconfig",)
 }
 
-fn main() -> io::Result<(),> {
+fn main() -> anyhow::Result<(),> {
 	println!("syncing...");
 	match fs::try_exists(format!("{}/.git/", Conf.raw()),) {
 		Ok(true,) => {
