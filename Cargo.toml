@@ -1,10 +1,16 @@
 [package]
-name = "dot"
+name = "sugiura-hiromichi_dot"
 version = "0.1.4"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT"
+description = "my personal dotfiles manager"
+homepage = "https://github.com/sugiura-hiromichi/dot"
+documentation = "https://github.com/sugiura-hiromichi/dot"
+repository = "https://github.com/sugiura-hiromichi/dot"
+readme = "README.md"
 
 [dependencies]
 anyhow = "1.0"
-mylibrary = { git = "https://github.com/sugiura-hiromichi/mylibrary" }
+sugiura-hiromichi_mylibrary = "1"
