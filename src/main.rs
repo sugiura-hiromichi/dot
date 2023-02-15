@@ -3,9 +3,10 @@
 #![allow(unused)]
 #![feature(fs_try_exists, if_let_guard)]
 
-use mylibrary::cli;
-use mylibrary::sh;
-use mylibrary::sh_cmd;
+use sugiura_hiromichi_mylibrary::cli;
+use sugiura_hiromichi_mylibrary::sh;
+use sugiura_hiromichi_mylibrary::sh_cmd;
+
 use std::env;
 use std::fs;
 use std::io;
