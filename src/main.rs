@@ -106,13 +106,7 @@ fn main() -> anyhow::Result<(),> {
 			Command::Brew => {
 				sh_cmd!(
 					"brew",
-					[
-						"bundle",
-						"dump",
-						"--force",
-						"--file",
-						&(Conf.raw() + "/Brewfile"),
-					]
+					["bundle", "dump", "--force", "--file", &(Conf.raw() + "/Brewfile"),]
 				)?;
 			},
 		},
