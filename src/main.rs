@@ -3,6 +3,8 @@
 #![allow(unused)]
 #![feature(fs_try_exists, if_let_guard)]
 
+use clap::Parser;
+use clap::Subcommand;
 use sugiura_hiromichi_mylibrary::cli;
 use sugiura_hiromichi_mylibrary::sh;
 use sugiura_hiromichi_mylibrary::sh_cmd;
@@ -46,26 +48,38 @@ impl PathIdentifier {
 	}
 }
 
-fn linkable(s: &str,) -> bool {
-	s.contains(".config/.",) && !s.contains("git",) && !s.contains("DS_Store",)
-		|| s.contains(".gitconfig",)
+#[derive(clap::Parser,)]
+#[command(author, version)]
+struct Args {
+	#[command(subcommand)]
+	cmd: Option<Command,>,
 }
 
-fn main() -> anyhow::Result<(),> {
+#[derive(clap::Subcommand,)]
+#[command(author, version)]
+enum Command {
+	/// update `Brewfile`
+	Brew,
+}
+
+fn linkable(s: &str,) -> bool { !s.contains("git",) && !s.contains("DS_Store",) }
+
+fn sync() -> anyhow::Result<Option<std::process::Output,>,> {
 	println!("syncing...");
 	match fs::try_exists(format!("{}/.git/", Conf.raw()),) {
 		Ok(true,) => {
-			//  no need to clone. pull it.
+			// no need to clone. pull it.
 			sh_cmd!("cd", [Conf.raw()]);
-			sh_cmd!("git", ["pull"])?;
+			sh_cmd!("git", ["pull"])
 		},
 		_ => {
 			sh_cmd!("cd", [Home.raw()]);
-			sh_cmd!("git", ["clone".to_string(), format!("git@github.com:{REPOSITORY}")])?;
+			sh_cmd!("git", ["clone".to_string(), format!("git@github.com:{REPOSITORY}")])
 		},
 	}
+}
 
-	// symlinking
+fn symlink() -> anyhow::Result<(),> {
 	println!("symlinking...");
 	sh_cmd!("cd", [Home.raw()]);
 	let files = fs::read_dir(Conf.raw(),)?;
@@ -82,7 +96,34 @@ fn main() -> anyhow::Result<(),> {
 
 	sh_cmd!("cd", [Cargo.raw()]);
 	sh_cmd!("ln", ["-fsn".to_string(), Conf.raw() + "/config.toml"])?;
+	Ok((),)
+}
 
-	println!("dotfiles updated|>");
+fn main() -> anyhow::Result<(),> {
+	let args = Args::parse();
+	match args.cmd {
+		Some(c,) => match c {
+			Command::Brew => {
+				sh_cmd!(
+					"brew",
+					[
+						"bundle",
+						"dump",
+						"--force",
+						"--file",
+						&(Conf.raw() + "/Brewfile"),
+					]
+				)?;
+			},
+		},
+		None => {
+			if let Err(e,) = sync() {
+				panic!("failed to sync: {e}")
+			}
+			symlink()?;
+
+			println!("dotfiles updated|>");
+		},
+	}
 	Ok((),)
 }
