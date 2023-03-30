@@ -1,5 +1,5 @@
 [package]
-name = "_dot"
+name = "dot_"
 version = "0.2.4"
 edition = "2021"
 
