@@ -14,4 +14,4 @@ description = "my personal dotfiles manager"
 [dependencies]
 anyhow = "1.0"
 clap = { version = "4", features = ["derive"] }
-sugiura-hiromichi_mylibrary = "1"
+mylibrary_ = "1"
