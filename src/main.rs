@@ -5,9 +5,9 @@
 
 use clap::Parser;
 use clap::Subcommand;
-use sugiura_hiromichi_mylibrary::cli;
-use sugiura_hiromichi_mylibrary::sh;
-use sugiura_hiromichi_mylibrary::sh_cmd;
+use mylibrary_::cli;
+use mylibrary_::sh;
+use mylibrary_::sh_cmd;
 
 use std::env;
 use std::fs;
