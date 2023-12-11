@@ -38,7 +38,9 @@ impl PathIdentifier {
 			},
 			Home => match env::var("HOME",) {
 				Ok(val,) => val,
-				Err(e,) => panic!("|>set $HOME variable\n|> error message | {e}"),
+				Err(e,) => {
+					panic!("|>set $HOME variable\n|> error message | {e}")
+				},
 			},
 			Cargo => match env::var("CARGO_HOME,",) {
 				Ok(val,) => val,
@@ -62,7 +64,9 @@ enum Command {
 	Brew,
 }
 
-fn linkable(s: &str,) -> bool { !s.contains("git",) && !s.contains("DS_Store",) }
+fn linkable(s: &str,) -> bool {
+	!s.contains("git",) && !s.contains("DS_Store",) && &s[0..1] != "."
+}
 
 fn sync() -> anyhow::Result<Option<std::process::Output,>,> {
 	println!("syncing...");
@@ -74,7 +78,10 @@ fn sync() -> anyhow::Result<Option<std::process::Output,>,> {
 		},
 		_ => {
 			sh_cmd!("cd", [Home.raw()]);
-			sh_cmd!("git", ["clone".to_string(), format!("git@github.com:{REPOSITORY}")])
+			sh_cmd!(
+				"git",
+				["clone".to_string(), format!("git@github.com:{REPOSITORY}")]
+			)
 		},
 	}
 }
@@ -106,7 +113,13 @@ fn main() -> anyhow::Result<(),> {
 			Command::Brew => {
 				sh_cmd!(
 					"brew",
-					["bundle", "dump", "--force", "--file", &(Conf.raw() + "/Brewfile"),]
+					[
+						"bundle",
+						"dump",
+						"--force",
+						"--file",
+						&(Conf.raw() + "/Brewfile"),
+					]
 				)?;
 			},
 		},
