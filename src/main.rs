@@ -1,7 +1,7 @@
 //! `dot` is a shell command which helps installing or updating dotfiles
 //! and setup symlinks automatically
 #![allow(unused)]
-#![feature(fs_try_exists, if_let_guard)]
+#![feature(if_let_guard)]
 
 use clap::Parser;
 use clap::Subcommand;
@@ -20,6 +20,7 @@ enum PathIdentifier {
 	Conf,
 	Home,
 	Cargo,
+	Workspace,
 }
 
 impl PathIdentifier {
@@ -46,6 +47,10 @@ impl PathIdentifier {
 				Ok(val,) => val,
 				Err(_,) => Home.raw() + "/.cargo",
 			},
+			Workspace => match env::var("WORKSPACE",) {
+				Ok(val,) => val,
+				Err(_,) => Home.raw() + "/Downloads",
+			},
 		}
 	}
 }
@@ -62,15 +67,16 @@ struct Args {
 enum Command {
 	/// update `Brewfile`
 	Brew,
+	Link,
 }
 
 fn linkable(s: &str,) -> bool {
-	!s.contains("git",) && !s.contains("DS_Store",) && &s[0..1] != "."
+	!s.contains("git",) && !s.contains("DS_Store",) && &s[0..1] == "."
 }
 
-fn sync() -> anyhow::Result<Option<std::process::Output,>,> {
+fn sync_repo() -> anyhow::Result<Option<std::process::Output,>,> {
 	println!("syncing...");
-	match fs::try_exists(format!("{}/.git/", Conf.raw()),) {
+	match fs::exists(format!("{}/.git", Conf.raw()),) {
 		Ok(true,) => {
 			// no need to clone. pull it.
 			sh_cmd!("cd", [Conf.raw()]);
@@ -88,7 +94,7 @@ fn sync() -> anyhow::Result<Option<std::process::Output,>,> {
 
 fn symlink() -> anyhow::Result<(),> {
 	println!("symlinking...");
-	sh_cmd!("cd", [Home.raw()]);
+	sh_cmd!("cd", [Workspace.raw()]);
 	let files = fs::read_dir(Conf.raw(),)?;
 	for entry in files {
 		let entry = entry.expect("Fail to get entry",).path();
@@ -121,15 +127,20 @@ fn main() -> anyhow::Result<(),> {
 						&(Conf.raw() + "/Brewfile"),
 					]
 				)?;
+				println!("🫠Brewfile updated|>")
+			},
+			Command::Link => {
+				symlink()?;
+				println!("🫠symlink updated|>")
 			},
 		},
 		None => {
-			if let Err(e,) = sync() {
+			if let Err(e,) = sync_repo() {
 				panic!("failed to sync: {e}")
 			}
 			symlink()?;
 
-			println!("dotfiles updated|>");
+			println!("🫠dotfiles updated|>");
 		},
 	}
 	Ok((),)
